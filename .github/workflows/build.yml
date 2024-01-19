@@ -1,27 +1,38 @@
 name: CI
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-
-      # used to cache dependencies with a timeout
-      - name: Get Date
-        id: get-date
+      - name: Install sdkmanager
         run: |
-          echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
-        shell: bash
+          sudo apt-get update -qq
+          sudo apt-get install -y android-sdk
+
+      - name: Add sdkmanager to PATH
+        run: |
+          export PATH=$PATH:/usr/lib/android-sdk/tools/bin
+          echo "y" | sdkmanager --install "build-tools;29.0.2"
+
+      - name: Install Android Build Tools
+        run: |
+          echo y | sdkmanager "build-tools;29.0.2"
+
+      - name: Add Build Tools to PATH
+        run: |
+          export PATH=$PATH:$ANDROID_SDK_ROOT/build-tools/29.0.2
+
+      - uses: actions/checkout@v2
 
       - name: Cache Buildozer global directory
         uses: actions/cache@v2
         with:
           path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }} # Replace with your path
+          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
 
       - uses: actions/cache@v2
         with:
@@ -34,9 +45,3 @@ jobs:
         with:
           command: buildozer android debug
           buildozer_version: master
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: package
-          path: ${{ steps.buildozer.outputs.filename }}
