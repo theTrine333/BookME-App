@@ -28,6 +28,11 @@ jobs:
           path: .buildozer
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
+      - name: Pip installing
+        with:
+          command: pip install pyjnius
+          buildozer_version: stable
+     
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
         id: buildozer
