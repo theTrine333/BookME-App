@@ -39,7 +39,7 @@ jobs:
         uses: ArtemSBulgakov/buildozer-action@v1
         id: buildozer
         with:
-          command: pip install pyjnius;buildozer android debug
+          command: buildozer android debug
           buildozer_version: stable
 
       - name: Upload artifacts
