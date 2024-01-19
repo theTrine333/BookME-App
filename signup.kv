@@ -1,0 +1,111 @@
+MDScreen:
+    name:"signup"
+    MDFloatLayout:
+        MDIconButton:
+            icon: "arrow-left"
+            pos_hint: {'center_y':.95}
+            theme_text_color:"Custom"
+            text_color:1,.65,0,1
+            on_release: 
+                root.manager.transition.direction = "right"
+                root.manager.current = "main"
+        #md_background_color: 1, 1, 1, 1
+        MDLabel:
+            text: 'B o o k M e!'
+            font_name: 'BPoppins'
+            font_size: "26sp"
+            pos_hint: {"center_x":.5,'center_y':.85}
+            halign:"center"
+            color: 1,.65,0,1
+        MDLabel:
+            text: 'Signup to continue'
+            font_name: 'MPoppins'
+            font_size: "16sp"
+            pos_hint: {"center_x":.5,'center_y':.8}
+            halign:"center"
+            color: 1,.65,0,.4 
+        MDFloatLayout: 
+            TextInput:
+                hint_text:"Email"
+                #size_hint_y:.75
+                size_hint: .64, .065
+                id: email_field
+                required:True
+                multiline:False
+                background_color:0,0,0,0
+                foreground_color:1,.65,0,1
+                cusor_color:1,.65,0,1
+                font_name:'MPoppins'
+                font_size: '14sp'  
+                pos_hint: {'center_x': .5,"center_y":.65}
+            TextInput:
+                hint_text:"Username"
+                #size_hint_y:.75
+                size_hint: .64, .065
+                id: usename_field
+                background_color:0,0,0,0
+                foreground_color:1,.65,0,1
+                cusor_color:1,1,1,1
+                multiline:False
+                pos_hint: {'center_x': .5, 'center_y': .55} 
+                font_name:'MPoppins'
+                font_size: '14sp'  
+            TextInput:
+                hint_text:"Password"
+                #size_hint_y:.75
+                size_hint: .64, .065
+                id: passwd_field
+                multiline:False
+                background_color:0,0,0,0
+                foreground_color:1,.65,0,1
+                cusor_color:1,.65,0,1
+                font_name:'MPoppins'
+                font_size: '14sp'  
+                pos_hint: {'center_x': .5,"center_y":.45}
+                password:True if (show.icon == "eye-off-outline") else False
+            MDIconButton:
+                icon:"eye-off-outline"
+                id:show
+                text_color:1,.65,0,1
+                theme_text_color:"Custom"
+                pos_hint: {'center_x': .85,"center_y":.46}
+                on_release: 
+                    if self.icon == "eye-outline" :self.icon = "eye-off-outline"
+                    else:self.icon = "eye-outline"
+            Button:
+                text:"SIGNUP"
+                #text_color:.34,.34,.34,1
+                pos_hint: {'center_x': .55,"center_y":.3}
+                size_hint: .46, .065
+                background_color:rgba(255,164,0,255)
+                icon:"arrow-right-circle-outline"
+                on_press: app.signup(email_field.text,usename_field.text,passwd_field.text,root)
+                canvas.before:
+                    Color: 
+                        rgb:rgba(255,164,0,255)
+                    Line:
+                        width: 1.2
+                        rounded_rectangle:self.x,self.y,self.width,self.height,5,5,5,5,100
+            
+        MDLabel:
+            text: 'Signup With :'
+            font_name: 'BPoppins'
+            pos_hint: {'center_x': .55,'center_y':.09}
+            font_size: "12sp"
+            halign:"center"
+            color: 1,.65,0,.2
+        MDIconButton:
+            icon:"google"
+            theme_text_color:"Custom"
+            text_color:1,.65,0,1
+            pos_hint: {'center_x': .45, 'center_y':.05}
+        MDIconButton:
+            icon:"facebook"
+            theme_text_color:"Custom"
+            text_color:1,.65,0,1
+            pos_hint: {'center_x': .55, 'center_y':.05}
+        MDIconButton:
+            icon:"github"
+            theme_text_color:"Custom"
+            text_color:1,.65,0,1
+            pos_hint: {'center_x': .65, 'center_y':.05}
