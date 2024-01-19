@@ -15,7 +15,6 @@ jobs:
 
       - name: Add sdkmanager to PATH
         run: |
-          export PATH=$PATH:/usr/lib/android-sdk/tools/bin
           echo "y" | sdkmanager --install "build-tools;29.0.2"
 
       - name: Install Android Build Tools
