@@ -9,6 +9,7 @@ jobs:
 
     steps:
       - name: Install sdkmanager
+        shell: bash
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y android-sdk
