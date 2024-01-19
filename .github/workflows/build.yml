@@ -12,6 +12,9 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y android-sdk
+          sudo apt-get install build-essential -y
+          sudo apt-get install libstdc++6 -y
+          sudo apt-get install aidl -y
 
       - name: Add sdkmanager to PATH
         run: |
