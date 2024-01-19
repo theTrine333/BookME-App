@@ -28,6 +28,10 @@ jobs:
           path: .buildozer
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
+      - name: Install Android SDK
+        run: |
+          echo y | sdkmanager "platforms;android-29" "build-tools;29.0.2"
+
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
         id: buildozer
