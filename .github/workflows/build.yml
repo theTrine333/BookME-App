@@ -1,4 +1,4 @@
-name: CI
+name: AppMaker
 on:
   push:
     branches: [main]
@@ -15,18 +15,6 @@ jobs:
           sudo apt-get install build-essential -y
           sudo apt-get install libstdc++6 -y
           sudo apt-get install aidl -y
-
-      - name: Add sdkmanager to PATH
-        run: |
-          echo "y" | sdkmanager --install "build-tools;29.0.2"
-
-      - name: Install Android Build Tools
-        run: |
-          echo y | sdkmanager "build-tools;29.0.2"
-
-      - name: Add Build Tools to PATH
-        run: |
-          export PATH=$PATH:$ANDROID_SDK_ROOT/build-tools/29.0.2
 
       - uses: actions/checkout@v2
 
