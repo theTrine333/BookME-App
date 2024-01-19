@@ -1,1 +1,1 @@
-![](https://github.com/theTrine333/BookME-App/blob/main/iconBookeME.png)
+![BookME](https://github.com/theTrine333/BookME-App/blob/main/iconBookeME.png)
