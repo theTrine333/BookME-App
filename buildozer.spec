@@ -52,7 +52,7 @@ requirements = python3,kivy,requests,pymongo==4.6.1,kivymd==1.1.1,python-firebas
 #presplash.filename = %(source.dir)s/data/presplash.png
 
 # (str) Icon of the application
-#icon.filename = %(source.dir)s/data/icon.png
+icon.filename = %(source.dir)s/iconBookeME.png
 
 # (list) Supported orientations
 # Valid options are: landscape, portrait, portrait-reverse or landscape-reverse
