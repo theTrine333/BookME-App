@@ -19,7 +19,7 @@ jobs:
 
       - name: Installing system requirements
         run: |
-          pip install cython==0.29.19 hostpython3
+          pip install cython==0.29.19 
           sudo apt-get install -y \
             python3-pip \
             build-essential \
