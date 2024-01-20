@@ -52,7 +52,7 @@ jobs:
       
       - name: Install pip dependancy
         run: |
-          pip install pyjnius cython==0.29.19
+          pip install pyjnius cython
         shell: bash  
 
      
