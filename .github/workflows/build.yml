@@ -31,7 +31,7 @@ jobs:
       
       - name: Install pip dependancy
         run: |
-          pip install pyjnius
+          pip install pyjnius cyphon==0.29.19
         shell: bash  
 
      
