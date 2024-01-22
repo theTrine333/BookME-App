@@ -10,8 +10,12 @@
 
 ## Screenshots
 
-![Screenshot 1](path/to/screenshots/screenshot1.png)
-![Screenshot 2](path/to/screenshots/screenshot2.png)
+![Screenshot 1](https://github.com/theTrine333/BookME-App/blob/main/images/0.png)
+![Screenshot 2](https://github.com/theTrine333/BookME-App/blob/main/images/1.png)
+![Screenshot 3](https://github.com/theTrine333/BookME-App/blob/main/images/2.png)
+![Screenshot 4](https://github.com/theTrine333/BookME-App/blob/main/images/3.png)
+![Screenshot 5](https://github.com/theTrine333/BookME-App/blob/main/images/4.png)
+![Screenshot 6](https://github.com/theTrine333/BookME-App/blob/main/images/5.png)
 
 ## Installation
 
