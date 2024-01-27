@@ -1,4 +1,4 @@
-name: CI
+name: Kivy-App-Maker
 on:
   push:
     branches: [ main ]
