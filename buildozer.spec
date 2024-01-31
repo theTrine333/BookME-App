@@ -21,7 +21,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 
 # (list) List of inclusions using pattern matching
-#source.include_patterns = assets/*,images/*.png
+source.include_patterns = assets/fonts/*.ttf,assets/icons/*.png,assets/*.png,images/*.png,.bookme.db,FirebaseFolder/*.py,Screens/*.kv
 
 # (list) Source files to exclude (leave empty to not exclude anything)
 #source.exclude_exts = spec
@@ -42,7 +42,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3==3.10.12,hostpython3==3.10.12,kivymd==1.1.1,kivy==2.2.1,kivyauth==2.3.3,requests,pymongo==4.6.1,python-firebase==1.2,multitasking==0.0.11,jsonschema==3.2.0,orjson==3.9.10,simplejson==3.17.6
+requirements = python3==3.10.12,hostpython3==3.10.12,kivymd==1.1.1,kivy==2.2.1,kivyauth==2.3.3,requests,multitasking==0.0.11,jsonschema==3.2.0,orjson==3.9.10,simplejson==3.17.6
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
