@@ -36,6 +36,7 @@ jobs:
             libavformat-dev \
             libavcodec-dev \
             zlib1g-dev
+          export PATH=$PATH:~/.local/bin/
         shell: bash
 
       - name: Cache Buildozer global directory
