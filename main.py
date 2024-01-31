@@ -2,8 +2,13 @@ from kivy.config import Config
 from os.path import dirname, join,getsize, expanduser, getmtime
 from os import *
 from kivymd.app import MDApp
+from kivy.uix.popup import Popup
+from kivymd.uix.spinner import MDSpinner
+from kivy.uix.label import Label
+from kivy.metrics import dp
 from kivy.core.window import Window
 from kivy.utils import get_color_from_hex
+from kivymd.toast import toast
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivy.properties import BooleanProperty
 from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelThreeLine
@@ -14,18 +19,15 @@ from kivymd.uix.dialog import MDDialog
 from kivy.animation import Animation
 from kivy.network.urlrequest import *
 from kivy.lang import Builder
-from firebase import firebase
+from FirebaseFolder import firebase
 from kivy.core.text import LabelBase
-import requests,os, platform,json,threading,time,multitasking
-from pymongo import MongoClient
+import subprocess,os, platform,json,threading,time,multitasking
 from requests.exceptions import ConnectionError
+#from main import Firebase
 
 Window.size = (400,650)
-#client = MongoClient("mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000")
-#db = client.bookme
-#users = db.users
 Firebase = firebase.FirebaseApplication('https://bookme-1703626309990-default-rtdb.firebaseio.com/',None)
-downloadsFolder = join('/sdcard', 'Downloads/BookME') if platform == 'android' else (os.path.expanduser("~")+"/Downloads/BookME")
+downloadsFolder = join('/storage/emulated/0', 'Downloads/BookME') if platform == 'android' else (os.path.expanduser("~")+"/Downloads/BookME")
 
 
 
@@ -43,16 +45,31 @@ class BookMe(MDApp):
         "LLPRI":(1,.65,0,.3)
     }
     isLoading = BooleanProperty(False)
-    
-    download = True
+       
     global screenManager
     screenManager = ScreenManager()
+    
 
-    def downloading(self,Boolean):
-        download = Boolean
+    def on_start(self):
+        #CREATING DATALOADING SPINNER
+        content = MDFloatLayout()
+        spinner = MDSpinner(size_hint=(None,None),
+                            size=(dp(46),dp(43)),
+                            active=True,
+                            pos_hint={'center_x': .5,'center_y':.5 })
+        content.add_widget(spinner)
+        #content.add_widget(content_cancel)
+        global popup
+        popup = Popup(
+                    title='Fetching data...',
+                    title_align='center',
+                    title_color=(1,.65,0,1),
+                    separator_color=(0,0,0,0),
+                    size_hint=(None, None), size=(dp(200), dp(150)),
+                    content=content, disabled=False)        
     def checker(self,file):
         file = os.join(downloadsFolder, file)
-        if os.path.exists(path=file):
+        if os.path.exists(file):
             # Comment: 
             self.dialog = MDDialog(
                 title="File Exists",
@@ -61,40 +78,60 @@ class BookMe(MDApp):
                 buttons=[
                     MDFlatButton(
                         text="CANCEL",
-                        on_press=self.dialog.close()
+                        on_press=self.checker_cancel_btn
                     ),
                     MDRaisedButton(
                         text="DOWNLOAD",
-                        on_release=self.downloading(True)
+                        on_release=self.checker_download_btn
                     )
                 ],
             )
             self.dialog.open()
-        
-        return False    
-
+        else :
+            download = True    
+    
+    def checker_download_btn(self,obj):
+        download = True
+        self.dialog.dismiss()
+    
     @multitasking.task
     def downloadMe(self,downloadUrl,widget):
-            try:
-                widget.icon='progress-clock'
-                widget.theme_text_color="Custom"
-                widget.text_color=(0,.5,0,.5)
-                req =  requests.get(downloadUrl, stream=True)
-                filename = req.url[downloadUrl.rfind('/') + 1:]
-                #self.checker(filename)
-                if self.download:
-                    filename = join(downloadsFolder,filename)
-                    response = UrlRequest(downloadUrl,file_path=filename)
+        try:
+            widget.icon='progress-clock'
+            widget.theme_text_color="Custom"
+            widget.text_color=(0,.5,0,.5)
+            req =  requests.get(downloadUrl, stream=True)
+            filename = req.url[downloadUrl.rfind('/') + 1:]
+            filename = join(downloadsFolder,filename)
+            UrlRequest(downloadUrl,
+                        on_progress=None,
+                        #on_success=self.success(widget),
+                        file_path=filename)
+                
+            widget.icon='progress-check'
+            widget.theme_text_color="Custom"
+            widget.text_color=self.COLORS['GREEN']
+        except Exception as E:
+            import traceback
+            traceback.print_exc()
+            widget.icon='progress-alert'
+            widget.theme_text_color="Custom"
+            widget.text_color=(1,0,0,1)            
                     
-                widget.icon='progress-check'
-                widget.theme_text_color="Custom"
-                widget.text_color=(0,1,0,1)
-            except Exception as E:
-                import traceback
-                traceback.print_exc()
-                widget.icon='progress-alert'
-                widget.theme_text_color="Custom"
-                widget.text_color=(1,0,0,1)            
+    def progress(self, request, current_size, total_size):
+        
+        print(f"Downloaded ({str(round(current_size / total_size * 100,2))}%)\r")
+    
+    def failure(self,widget):
+        widget.icon='progress-alert'
+        widget.theme_text_color="Custom"
+        widget.text_color=(1,0,0,1)             
+    
+    def success(self,widget):
+        widget.icon='progress-check'
+        widget.theme_text_color="Custom"
+        widget.text_color=(0,1,0,1)    
+    
     def signup(self,email,username,password,nav):
         try:
             if email != "" and username != "" and password != "":
@@ -115,6 +152,7 @@ class BookMe(MDApp):
         except ConnectionError:    
             Snackbar(text="Network problem was encountered!",
                             bg_color=self.COLORS['LRED'],pos_hint={'center_x': .5, 'y': .75}).open()
+    
     def login(self, username, password,nav):
         try:
             users = Firebase.get('bookme-1703626309990-default-rtdb/users','')
@@ -142,20 +180,21 @@ class BookMe(MDApp):
         Nav.manager.current = "search"   
                 
     def fetchBook(self,booktoSearch):
-        isLoading = True
+        popup.open()
         screenManager.get_screen("search").ids.box.clear_widgets()
-        #time.sleep(1)
+        
         try:
             url = "https://filepursuit.p.rapidapi.com/"
             querystring = {"q":booktoSearch,"filetype":"PDF"}
+            from data import key,host
             headers = {
-                "X-RapidAPI-Key": "5f125d47b5msh95ee3b6fff88387p1dd077jsn08737d52e5c7",
-                "X-RapidAPI-Host": "filepursuit.p.rapidapi.com"
+                "X-RapidAPI-Key": key,
+                "X-RapidAPI-Host": host
             }
             response = requests.get(url, headers=headers, params=querystring).json()
             
                  #Used dummy data for testing
-            """ with open('response.json') as file:
+            """ with open('response.json',mode='r') as file:
                 response = json.load(file) """
                 
             if response["status"] == "success":
@@ -194,8 +233,10 @@ MDBoxLayout:
                                 secondary_text_color=(1,.65,0,.5))
                             )
                         )                          
-                isLoading = False
+                popup.dismiss()
             else:
+                popup.dismiss()
+                screenManager.get_screen("search").ids.box.clear_widgets()
                 screenManager.get_screen("search").ids.box.add_widget(
 Builder.load_string(
 '''
@@ -212,31 +253,30 @@ MDBoxLayout:
         halign:"center"
         color: {self.COLORS['LRED']}
 ''')
-)               
+)                       
         except ConnectionError:
-            isLoading = True
+            popup.dismiss()
             Snackbar(text="Network problems encountered!", bg_color=self.COLORS['LRED']).open()
-
             
     def build(self):
         self.theme_cls.primary_palette = "Orange"
         self.theme_cls.theme_style = "Dark"
         
-        screenManager.add_widget(Builder.load_file("main.kv"))
-        screenManager.add_widget(Builder.load_file("login.kv"))
-        screenManager.add_widget(Builder.load_file("signup.kv"))
-        screenManager.add_widget(Builder.load_file("search.kv"))
-        screenManager.add_widget(Builder.load_file("downloads.kv"))
+        """ screenManager.add_widget(Builder.load_file("Screens/main.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/login.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/signup.kv")) """
+        screenManager.add_widget(Builder.load_file("Screens/search.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/downloads.kv"))
         return screenManager
     
     def on_downloads_active(self):
+        screenManager.get_screen("downloads").ids.selection_list.clear_widgets()
         if listdir(downloadsFolder) ==[]:
-            screenManager.get_screen("downloads").ids.Loads.add_widget(
+            screenManager.get_screen("downloads").ids.selection_list.add_widget(
               Builder.load_string(
 '''
 MDBoxLayout:
     orientation:'vertical'
-
     spacing:"5dp"
     Image:
         source:'assets/icons/2.png'
@@ -262,7 +302,8 @@ MDBoxLayout:
                 screenManager.get_screen("downloads").ids.selection_list.add_widget(
                     Builder.load_string(
 f"""
-ThreeLineListItem:
+ThreeLineAvatarIconListItem:
+    #on_release = 
     text: "{name}"
     secondary_text: "size : {intial_size}"
     tertiary_text:"Downloaded : {Time}"
@@ -274,21 +315,38 @@ ThreeLineListItem:
     tertiary_text_color:(1,.65,0,.5)
     secondary_text_halign:'right'
     
+    IconLeftWidget:
+        icon:'file-document'
+        theme_text_color: 'Custom'
+        text_color: app.COLORS['LPRI']
+        on_release: toast("Hello World", True, 80, 200, 0)
+    
+    IconRightWidget:
+        icon:'arrow-top-right-thin-circle-outline'
+        theme_text_color: 'Custom'
+        text_color: app.COLORS['LGREEN']
+        on_release: app.open_File("{File}")
 """
                     )
                 )
+    @multitasking.task
+    def open_File(self,File):
+        try:
+            os.startfile(File)
+        except AttributeError:
+            subprocess.call(['open',File])
     
     def set_selection_mode(self, instance_selection_list, mode):
         if mode:
-            md_bg_color = (0, 0, 0, .01)
+            md_bg_color = (0, 0, 0, 0)
             left_action_items = [["close",lambda x: screenManager.get_screen("downloads").ids.selection_list.unselected_all()]]
-            right_action_items = [["trash-can-outline"], ["share-variant"]]
+            right_action_items = [["trash-can-outline",lambda x : deleteFile], ["share-variant"]]
         else:
             md_bg_color = (0, 0, 0, .01)
             left_action_items = [["chevron-up-circle-outline"]]
             right_action_items = [["magnify"], ["dots-vertical"]]
         screenManager.get_screen("downloads").ids.toolbar.title = "Downloads"
-        Animation(md_bg_color=md_bg_color, d=0.2).start(screenManager.get_screen("downloads").ids.toolbar)
+        #Animation(md_bg_color=(0, 0, 0, .01), d=0.2).start(screenManager.get_screen("downloads").ids.toolbar)
         screenManager.get_screen("downloads").ids.toolbar.left_action_items = left_action_items
         screenManager.get_screen("downloads").ids.toolbar.right_action_items = right_action_items
     
@@ -303,6 +361,8 @@ ThreeLineListItem:
                 len(instance_selection_list.get_selected_list_items())
             )
 
+    def deleteFile(self,instance_selection_list, instance_selection_item):
+        pass
 if __name__ == "__main__" :
     LabelBase.register(name="MPoppins",fn_regular="assets/fonts/Poppins-Medium.ttf")
     LabelBase.register(name="BPoppins",fn_regular="assets/fonts/Poppins-SemiBold.ttf")
