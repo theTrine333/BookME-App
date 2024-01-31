@@ -1,0 +1,49 @@
+MDScreen:
+    name:"main"
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_background_color: 1, 1, 1, 1
+        MDLabel:
+            text: 'BookMe!'
+            font_name: 'BPoppins'
+            font_size: "23sp"
+            pos_hint: {'center_y': .38}
+            halign:"center"
+            color: app.COLORS['PRI']
+        Image:
+            source:"assets/icons/0.png"
+            #size_hint: .5,.5
+            halign:"center"
+            pos_hint: {'center_x': .5}
+        MDLabel:
+            text: 'Looking for that book on the web is not easy\n Here you just such that book by name and we organize your results'
+            font_name: 'MPoppins'
+            font_size: "13sp"
+            pos_hint: {'center_y': .38}
+            halign:"center"
+            color: app.COLORS['LLPRI']
+
+        MDRectangleFlatIconButton:
+            text:"Get Started"
+            #text_color:.34,.34,.34,1
+            pos_hint: {'center_x': .5,"center_y":.38}
+            icon:"arrow-right-circle-outline"
+            halign:"center"
+            #icon_color:.34,.34,.34,1
+            #line_color:.34,.34,.34,1
+            on_press: 
+                root.manager.transition.direction="left"
+                root.manager.current = "login"
+        
+
+
+        MDBoxLayout:
+            orientation: 'vertical'
+            adaptive_height: True
+            MDLabel:
+                text: ' POWERED BY :\nTRINETECHNOLOGIES'
+                font_name: 'MPoppins'
+                font_size: "11sp"
+                halign:"center"
+                pos_hint: {'y':.1 }
+                color: app.COLORS['LLPRI']
