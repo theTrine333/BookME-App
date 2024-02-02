@@ -21,7 +21,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 
 # (list) List of inclusions using pattern matching
-source.include_patterns = assets/fonts/*.ttf,assets/icons/*.png,assets/*.png,images/*.png,.bookme.db,FirebaseFolder/*.py,Screens/*.kv
+#source.include_patterns = assets/fonts/*.ttf,assets/icons/*.png,assets/*.png,images/*.png,.bookme.db,FirebaseFolder/*.py,Screens/*.kv
 
 # (list) Source files to exclude (leave empty to not exclude anything)
 #source.exclude_exts = spec
@@ -109,10 +109,10 @@ android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
 #android.features = android.hardware.usb.host
 
 # (int) Target Android API, should be as high as possible.
-android.api = 28
+#android.api = 28
 
 # (int) Minimum API your APK / AAB will support.
-android.minapi = 21
+#android.minapi = 21
 
 # (int) Android SDK version to use
 #android.sdk = 20
