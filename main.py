@@ -262,9 +262,9 @@ MDBoxLayout:
         self.theme_cls.primary_palette = "Orange"
         self.theme_cls.theme_style = "Dark"
         
-        """ screenManager.add_widget(Builder.load_file("Screens/main.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/main.kv"))
         screenManager.add_widget(Builder.load_file("Screens/login.kv"))
-        screenManager.add_widget(Builder.load_file("Screens/signup.kv")) """
+        screenManager.add_widget(Builder.load_file("Screens/signup.kv"))
         screenManager.add_widget(Builder.load_file("Screens/search.kv"))
         screenManager.add_widget(Builder.load_file("Screens/downloads.kv"))
         return screenManager
