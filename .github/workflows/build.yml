@@ -51,9 +51,11 @@ jobs:
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
       
       
-      - name: Install pip dependancy
+      - name: Install Buildozer dependacies
         run: |
-          pip install pyjnius cython
+          wget https://github.com/HeaTTheatR/KivyMD-data/raw/master/install-kivy-buildozer-dependencies.sh
+          chmod +x install-kivy-buildozer-dependencies.sh
+          ./install-kivy-buildozer-dependencies.sh
         shell: bash  
 
      
