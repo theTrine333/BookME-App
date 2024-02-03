@@ -18,7 +18,7 @@ package.domain = org.elcoder
 source.dir = .
 
 # (list) Source files to include (leave empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas
+source.include_exts = py,png,jpg,kv,atlas,db,ttf
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/fonts/*.ttf,assets/icons/*.png,assets/*.png,images/*.png,.bookme.db,FirebaseFolder/*.py,Screens/*.kv
