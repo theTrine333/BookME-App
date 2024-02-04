@@ -49,6 +49,10 @@ class BookMe(MDApp):
     
 
     def on_start(self):
+        try:
+            os.mkdir(downloadsFolder)
+        except Exception:
+            pass
         #CREATING DATALOADING SPINNER
         content = MDFloatLayout()
         spinner = MDSpinner(size_hint=(None,None),
@@ -270,9 +274,8 @@ MDBoxLayout:
     def on_downloads_active(self):
         try:
             os.mkdir(downloadsFolder)
-        catch Exception:
+        except Exception:
             pass
-        
         screenManager.get_screen("downloads").ids.selection_list.clear_widgets()
         if listdir(downloadsFolder) ==[]:
             screenManager.get_screen("downloads").ids.selection_list.add_widget(
