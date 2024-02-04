@@ -27,9 +27,7 @@ from requests.exceptions import ConnectionError
 
 #Window.size = (400,650)
 Firebase = firebase.FirebaseApplication('https://bookme-1703626309990-default-rtdb.firebaseio.com/',None)
-downloadsFolder = join('/storage/emulated/0', 'Downloads/BookME') if platform == 'android' else (os.path.expanduser("~")+"/Downloads/BookME")
-
-
+downloadsFolder = join('/storage/emulated/0', 'Download/BookME') if platform == 'android' else (os.path.expanduser("~")+"/Downloads/BookME")
 
 class BookMe(MDApp):
 
@@ -270,6 +268,11 @@ MDBoxLayout:
         return screenManager
     
     def on_downloads_active(self):
+        try:
+            os.mkdir(downloadsFolder)
+        catch Exception:
+            pass
+        
         screenManager.get_screen("downloads").ids.selection_list.clear_widgets()
         if listdir(downloadsFolder) ==[]:
             screenManager.get_screen("downloads").ids.selection_list.add_widget(
