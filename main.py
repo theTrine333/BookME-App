@@ -18,18 +18,28 @@ from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.dialog import MDDialog
 from kivy.animation import Animation
 from kivy.network.urlrequest import *
+from kivy.clock import Clock
 from kivy.lang import Builder
 from FirebaseFolder import firebase
 from kivy.core.text import LabelBase
 import subprocess,os, platform,json,threading,time,multitasking
 from requests.exceptions import ConnectionError
-#from main import Firebase
+import requests
+from kivy.uix.modalview import ModalView
+from configs import *
 
-#Window.size = (400,650)
-Firebase = firebase.FirebaseApplication('https://bookme-1703626309990-default-rtdb.firebaseio.com/',None)
+Window.size = (400,650)
+#Firebase = firebase.FirebaseApplication('https://bookme-1703626309990-default-rtdb.firebaseio.com/',None)
 downloadsFolder = join('/storage/emulated/0', 'Download/BookME') if platform == 'android' else (os.path.expanduser("~")+"/Downloads/BookME")
 
+
+class SpinnerPopup(ModalView):
+    pass
+
 class BookMe(MDApp):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.modal = None
 
     COLORS = {
         "RED" : (1,0,0,1),
@@ -45,6 +55,7 @@ class BookMe(MDApp):
     isLoading = BooleanProperty(False)
        
     global screenManager
+    global popup
     screenManager = ScreenManager()
     
 
@@ -53,22 +64,7 @@ class BookMe(MDApp):
             os.mkdir(downloadsFolder)
         except Exception:
             pass
-        #CREATING DATALOADING SPINNER
-        content = MDFloatLayout()
-        spinner = MDSpinner(size_hint=(None,None),
-                            size=(dp(46),dp(43)),
-                            active=True,
-                            pos_hint={'center_x': .5,'center_y':.5 })
-        content.add_widget(spinner)
-        #content.add_widget(content_cancel)
-        global popup
-        popup = Popup(
-                    title='Fetching data...',
-                    title_align='center',
-                    title_color=(1,.65,0,1),
-                    separator_color=(0,0,0,0),
-                    size_hint=(None, None), size=(dp(200), dp(150)),
-                    content=content, disabled=False)        
+
     def checker(self,file):
         file = os.join(downloadsFolder, file)
         if os.path.exists(file):
@@ -134,16 +130,10 @@ class BookMe(MDApp):
         widget.theme_text_color="Custom"
         widget.text_color=(0,1,0,1)    
     
-    def signup(self,email,username,password,nav):
+    def signup(self,email,password,nav):
         try:
-            if email != "" and username != "" and password != "":
-                creds = {
-                    "email":email,
-                    "username":username,
-                    "password":password
-                }
-                Firebase.post('bookme-1703626309990-default-rtdb/users',creds)
-                #users.insert_one({"email":email,"username":username,"password":password})
+            if email != "" and password != "":
+                user = auth.create_user_with_email_and_password(email,password)
                 nav.manager.transition.direction="left"
                 nav.manager.current = "search"
                 Snackbar(text="Account was created successfully!",
@@ -156,25 +146,19 @@ class BookMe(MDApp):
                             bg_color=self.COLORS['LRED'],pos_hint={'center_x': .5, 'y': .75}).open()
     
     def login(self, username, password,nav):
+        self.modal = SpinnerPopup()
+        self.modal.open()
         try:
-            users = Firebase.get('bookme-1703626309990-default-rtdb/users','')
-            #with open('users.json') as file:
-            #    users = json.load(file)
-            for i in users.keys():
-                if username == users[i]['username'] and password == users[i]['password']:
-                    userName = users[i]['username']
-                    break
-                else:
-                    userName = "Nul"
-                
-            if userName !='Nul': 
+            if username !='' and password !='':
+                sign_user = auth.sign_in_with_email_and_password(username, password)
                 nav.manager.transition.direction="left"
                 nav.manager.current = "search"
+                self.modal.dismiss()
             else:
-                Snackbar(text="Wrong username or password!",
+                Snackbar(text="Please Fill In Your Details!",
                         bg_color=(1,0,0,1),pos_hint={'center_x': .5, 'y': .75}).open() 
-        except ConnectionError:    
-            Snackbar(text="Network problems encountered!",
+        except:    
+            Snackbar(text="Something went wrong :( ",
                             bg_color=self.COLORS['LRED'],pos_hint={'center_x': .5, 'y': .75}).open()
        
     def nav(self,Nav,Direction):
@@ -182,24 +166,41 @@ class BookMe(MDApp):
         Nav.manager.current = "search"   
                 
     def fetchBook(self,booktoSearch):
-        popup.open()
+        self.modal.open()
+        booktoSearch = booktoSearch.replace(' ','_')
         screenManager.get_screen("search").ids.box.clear_widgets()
-        
-        try:
-            url = "https://filepursuit.p.rapidapi.com/"
-            querystring = {"q":booktoSearch,"filetype":"PDF"}
-            from data import key,host
-            headers = {
-                "X-RapidAPI-Key": key,
-                "X-RapidAPI-Host": host
-            }
-            response = requests.get(url, headers=headers, params=querystring).json()
+        url = f"https://filepursuit.p.rapidapi.com/?q={booktoSearch}&filetype=pdf"
+        from data import key,host
+        headers = {
+            "X-RapidAPI-Key": key,
+            "X-RapidAPI-Host": host
+        }
+        #response = requests.get(url, headers=headers, params=querystring).json()
+        response = UrlRequest(url, 
+                            on_success=self.got_response,
+                            req_headers=headers,
+                            on_error=self.fail,
+                            on_failure=self.fail,
+                        )
+                #Used dummy data for testing
+        """ with open('response.json',mode='r') as file:
+            response = json.load(file) """
             
-                 #Used dummy data for testing
-            """ with open('response.json',mode='r') as file:
-                response = json.load(file) """
-                
-            if response["status"] == "success":
+    def build(self):
+        self.theme_cls.primary_palette = "Orange"
+        self.theme_cls.theme_style = "Dark"
+        
+        screenManager.add_widget(Builder.load_file("Screens/main.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/login.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/signup.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/search.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/downloads.kv"))
+        return screenManager
+    
+    def got_response(self, req, r):
+        print(f'got response, {req.is_finished=}')
+        response = r
+        if response["status"] == "success":
                 for result in response["files_found"]:
                     if result['file_size_bytes'] != "":
                         screenManager.get_screen("search").ids.box.add_widget(
@@ -235,9 +236,8 @@ MDBoxLayout:
                                 secondary_text_color=(1,.65,0,.5))
                             )
                         )                          
-                popup.dismiss()
-            else:
-                popup.dismiss()
+                    else:
+                                       self.modal.dismiss()
                 screenManager.get_screen("search").ids.box.clear_widgets()
                 screenManager.get_screen("search").ids.box.add_widget(
 Builder.load_string(
@@ -256,22 +256,31 @@ MDBoxLayout:
         color: {self.COLORS['LRED']}
 ''')
 )                       
-        except ConnectionError:
-            popup.dismiss()
-            Snackbar(text="Network problems encountered!", bg_color=self.COLORS['LRED']).open()
-            
-    def build(self):
-        self.theme_cls.primary_palette = "Orange"
-        self.theme_cls.theme_style = "Dark"
-        
-        screenManager.add_widget(Builder.load_file("Screens/main.kv"))
-        screenManager.add_widget(Builder.load_file("Screens/login.kv"))
-        screenManager.add_widget(Builder.load_file("Screens/signup.kv"))
-        screenManager.add_widget(Builder.load_file("Screens/search.kv"))
-        screenManager.add_widget(Builder.load_file("Screens/downloads.kv"))
-        return screenManager
-    
+        self.modal.dismiss()
+
+    def fail(self, req, r):
+        self.modal.dismiss()
+        screenManager.get_screen("search").ids.box.clear_widgets()
+        screenManager.get_screen("search").ids.box.add_widget(
+Builder.load_string(
+'''
+MDBoxLayout:
+    orientation:'vertical'
+    Image:
+        source:'assets/icons/2.png'
+        size_hint:1,None
+'''+f'''
+    MDLabel:
+        text: "SOMETHING WENT WRONG"
+        font_name: 'assets/fonts/Lcd.ttf'
+        font_size: "22sp"
+        halign:"center"
+        color: {self.COLORS['LRED']}
+''')
+) 
+
     def on_downloads_active(self):
+        #Clock.schedule_once(lambda x:self.showLoading('Fetching',True))
         try:
             os.mkdir(downloadsFolder)
         except Exception:
@@ -296,6 +305,7 @@ MDBoxLayout:
         color: app.COLORS['RED']
 ''')  
             )
+            self.popup.dismiss()
         else:
             for File in listdir(downloadsFolder):
                 name = File
@@ -346,7 +356,7 @@ ThreeLineAvatarIconListItem:
         if mode:
             md_bg_color = (0, 0, 0, 0)
             left_action_items = [["close",lambda x: screenManager.get_screen("downloads").ids.selection_list.unselected_all()]]
-            right_action_items = [["trash-can-outline",lambda x : deleteFile], ["share-variant"]]
+            right_action_items = [["trash-can-outline",lambda x : print("deleteFile")], ["share-variant"]]
         else:
             md_bg_color = (0, 0, 0, .01)
             left_action_items = [["chevron-up-circle-outline"]]
@@ -368,7 +378,8 @@ ThreeLineAvatarIconListItem:
             )
 
     def deleteFile(self,instance_selection_list, instance_selection_item):
-        pass
+        print("STARTING>>>")
+
 if __name__ == "__main__" :
     LabelBase.register(name="MPoppins",fn_regular="assets/fonts/Poppins-Medium.ttf")
     LabelBase.register(name="BPoppins",fn_regular="assets/fonts/Poppins-SemiBold.ttf")
