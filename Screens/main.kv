@@ -1,3 +1,14 @@
+<SpinnerPopup>:
+    size_hint: None, None
+    size: dp(92), dp(92)
+    auto_dismiss: False
+    BoxLayout:
+        orientation: 'vertical'
+        AnchorLayout:
+            MDSpinner:
+                size_hint: None, None
+                size: dp(46), dp(46)
+
 MDScreen:
     name:"main"
     MDBoxLayout:
@@ -34,8 +45,6 @@ MDScreen:
             on_press: 
                 root.manager.transition.direction="left"
                 root.manager.current = "login"
-        
-
 
         MDBoxLayout:
             orientation: 'vertical'
