@@ -1,6 +1,7 @@
 from kivy.config import Config
 from os.path import dirname, join,getsize, expanduser, getmtime
 from os import *
+from kivy.app import App
 from kivymd.app import MDApp
 from kivy.uix.popup import Popup
 from kivymd.uix.spinner import MDSpinner
@@ -26,13 +27,13 @@ import subprocess,os, platform,json,threading,time,multitasking
 from requests.exceptions import ConnectionError
 import requests
 from kivy.uix.modalview import ModalView
-from configs import *
+#from configs import *
 
-#Window.size = (400,650)
+Window.size = (400,650)
 Firebase = firebase.FirebaseApplication('https://bookme-1703626309990-default-rtdb.firebaseio.com/',None)
 downloadsFolder = join('/storage/emulated/0', 'Download/BookME') if platform == 'android' else (os.path.expanduser("~")+"/Downloads/BookME")
 
-
+#internal_storage_path = App.get_running_app().user_data_dir
 class SpinnerPopup(ModalView):
     pass
 
@@ -64,34 +65,7 @@ class BookMe(MDApp):
             os.mkdir(downloadsFolder)
         except Exception:
             pass
-
-    def checker(self,file):
-        file = os.join(downloadsFolder, file)
-        if os.path.exists(file):
-            # Comment: 
-            self.dialog = MDDialog(
-                title="File Exists",
-                text="Do you wish to download it again?",
-                type="alert",
-                buttons=[
-                    MDFlatButton(
-                        text="CANCEL",
-                        on_press=self.checker_cancel_btn
-                    ),
-                    MDRaisedButton(
-                        text="DOWNLOAD",
-                        on_release=self.checker_download_btn
-                    )
-                ],
-            )
-            self.dialog.open()
-        else :
-            download = True    
-    
-    def checker_download_btn(self,obj):
-        download = True
-        self.dialog.dismiss()
-    
+   
     @multitasking.task
     def downloadMe(self,downloadUrl,widget):
         try:
@@ -116,10 +90,6 @@ class BookMe(MDApp):
             widget.theme_text_color="Custom"
             widget.text_color=(1,0,0,1)            
                     
-    def progress(self, request, current_size, total_size):
-        
-        print(f"Downloaded ({str(round(current_size / total_size * 100,2))}%)\r")
-    
     def failure(self,widget):
         widget.icon='progress-alert'
         widget.theme_text_color="Custom"
@@ -130,27 +100,30 @@ class BookMe(MDApp):
         widget.theme_text_color="Custom"
         widget.text_color=(0,1,0,1)    
     
-    def signup(self,email,password,nav):
+    def signup(self,email,username,password,nav):
+        self.modal = SpinnerPopup()
+        self.modal.open()
         try:
-            if email != "" and password != "":
-                if email != "" and username != "" and password != "":
+            if email != "" and username != "" and password != "":
                 creds = {
                     "email":email,
                     "username":username,
                     "password":password
                 }
                 Firebase.post('bookme-1703626309990-default-rtdb/users',creds)
-                users.insert_one({"email":email,"username":username,"password":password})
                 nav.manager.transition.direction="left"
                 nav.manager.current = "search"
+                self.modal.dismiss()
                 Snackbar(text="Account was created successfully!",
                         bg_color=self.COLORS['GREEN'],pos_hint={'center_x': .5, 'y': .75}).open()
             else :
                 Snackbar(text="Fill in your details!",
                             bg_color=self.COLORS['LRED'],pos_hint={'center_x': .5, 'y': .75}).open()
+                self.modal.dismiss()
         except ConnectionError:    
             Snackbar(text="Network problem was encountered!",
                             bg_color=self.COLORS['LRED'],pos_hint={'center_x': .5, 'y': .75}).open()
+            self.modal.dismiss()
     
     def login(self, username, password,nav):
         self.modal = SpinnerPopup()
@@ -158,8 +131,6 @@ class BookMe(MDApp):
         try:
             if username !='' and password !='':
                 users = Firebase.get('bookme-1703626309990-default-rtdb/users','')
-                #with open('users.json') as file:
-                #    users = json.load(file)
                 for i in users.keys():
                     if username == users[i]['username'] and password == users[i]['password']:
                         userName = users[i]['username']
@@ -170,6 +141,7 @@ class BookMe(MDApp):
                 if userName !='Nul': 
                     nav.manager.transition.direction="left"
                     nav.manager.current = "search"
+                    self.modal.dismiss()
                 else:
                     Snackbar(text="Wrong username or password!",
                             bg_color=(1,0,0,1),pos_hint={'center_x': .5, 'y': .75}).open() 
@@ -177,10 +149,11 @@ class BookMe(MDApp):
             else:
                 Snackbar(text="Please Fill In Your Details!",
                         bg_color=(1,0,0,1),pos_hint={'center_x': .5, 'y': .75}).open() 
+                self.modal.dismiss()
         except:    
             Snackbar(text="Something went wrong :( ",
                             bg_color=self.COLORS['LRED'],pos_hint={'center_x': .5, 'y': .75}).open()
-       
+            self.modal.dismiss()
     def nav(self,Nav,Direction):
         Nav.manager.transition.direction = Direction
         Nav.manager.current = "search"   
@@ -255,28 +228,28 @@ MDBoxLayout:
                                 secondary_theme_text_color='Custom',
                                 secondary_text_color=(1,.65,0,.5))
                             )
-                        )                          
-                    else:
-                                       self.modal.dismiss()
-                screenManager.get_screen("search").ids.box.clear_widgets()
-                screenManager.get_screen("search").ids.box.add_widget(
-Builder.load_string(
-'''
-MDBoxLayout:
-    orientation:'vertical'
-    Image:
-        source:'assets/icons/1.png'
-        size_hint:1,None
-'''+f'''
-    MDLabel:
-        text: "RESPONSE : {response['status']} RECEIVED"
-        font_name: 'assets/fonts/Lcd.ttf'
-        font_size: "22sp"
-        halign:"center"
-        color: {self.COLORS['LRED']}
-''')
-)                       
-        self.modal.dismiss()
+                        )
+                self.modal.dismiss()                
+        else :                      
+            screenManager.get_screen("search").ids.box.clear_widgets()
+            screenManager.get_screen("search").ids.box.add_widget(
+    Builder.load_string(
+    '''
+    MDBoxLayout:
+        orientation:'vertical'
+        Image:
+            source:'assets/icons/1.png'
+            size_hint:1,None
+    '''+f'''
+        MDLabel:
+            text: "RESPONSE : {response['status']} RECEIVED"
+            font_name: 'assets/fonts/Lcd.ttf'
+            font_size: "22sp"
+            halign:"center"
+            color: {self.COLORS['LRED']}
+    ''')
+    )                       
+            self.modal.dismiss()
 
     def fail(self, req, r):
         self.modal.dismiss()
