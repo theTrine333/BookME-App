@@ -28,8 +28,8 @@ import requests
 from kivy.uix.modalview import ModalView
 from configs import *
 
-Window.size = (400,650)
-#Firebase = firebase.FirebaseApplication('https://bookme-1703626309990-default-rtdb.firebaseio.com/',None)
+#Window.size = (400,650)
+Firebase = firebase.FirebaseApplication('https://bookme-1703626309990-default-rtdb.firebaseio.com/',None)
 downloadsFolder = join('/storage/emulated/0', 'Download/BookME') if platform == 'android' else (os.path.expanduser("~")+"/Downloads/BookME")
 
 
@@ -133,7 +133,14 @@ class BookMe(MDApp):
     def signup(self,email,password,nav):
         try:
             if email != "" and password != "":
-                user = auth.create_user_with_email_and_password(email,password)
+                if email != "" and username != "" and password != "":
+                creds = {
+                    "email":email,
+                    "username":username,
+                    "password":password
+                }
+                Firebase.post('bookme-1703626309990-default-rtdb/users',creds)
+                users.insert_one({"email":email,"username":username,"password":password})
                 nav.manager.transition.direction="left"
                 nav.manager.current = "search"
                 Snackbar(text="Account was created successfully!",
@@ -150,10 +157,23 @@ class BookMe(MDApp):
         self.modal.open()
         try:
             if username !='' and password !='':
-                sign_user = auth.sign_in_with_email_and_password(username, password)
-                nav.manager.transition.direction="left"
-                nav.manager.current = "search"
-                self.modal.dismiss()
+                users = Firebase.get('bookme-1703626309990-default-rtdb/users','')
+                #with open('users.json') as file:
+                #    users = json.load(file)
+                for i in users.keys():
+                    if username == users[i]['username'] and password == users[i]['password']:
+                        userName = users[i]['username']
+                        break
+                    else:
+                        userName = "Nul"
+                    
+                if userName !='Nul': 
+                    nav.manager.transition.direction="left"
+                    nav.manager.current = "search"
+                else:
+                    Snackbar(text="Wrong username or password!",
+                            bg_color=(1,0,0,1),pos_hint={'center_x': .5, 'y': .75}).open() 
+                    self.modal.dismiss()
             else:
                 Snackbar(text="Please Fill In Your Details!",
                         bg_color=(1,0,0,1),pos_hint={'center_x': .5, 'y': .75}).open() 
