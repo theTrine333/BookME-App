@@ -107,7 +107,7 @@ class BookMe(MDApp):
         try:
             username = screenManager.get_screen('login').ids.usename_field.text
             password = screenManager.get_screen('login').ids.passwd_field.text
-            print("Password : ",password)
+            
             if username !='' and password !='':
                 users = Firebase.get('bookme-1703626309990-default-rtdb/users','')
                 for i in users.keys():
