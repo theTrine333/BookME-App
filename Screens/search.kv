@@ -1,0 +1,71 @@
+MDScreen:
+    name:"search"
+    MDFloatLayout:
+        MDIconButton:
+            icon: "arrow-left"
+            pos_hint: {'center_y':.95}
+            theme_text_color:"Custom"
+            text_color:app.COLORS['PRI']
+            on_release: 
+                root.manager.transition.direction = "right"
+                root.manager.current = "main"
+        MDLabel:
+            text: 'B o o k M e!'
+            font_name: 'BPoppins'
+            font_size: "26sp"
+            pos_hint: {"center_x":.5,'center_y':.95}
+            halign:"center"
+            color: app.COLORS['PRI']
+        
+        MDIconButton:
+            icon:'folder-download-outline'
+            pos_hint: {'center_x':.9,'center_y':.95}
+            theme_text_color:"Custom"
+            text_color:app.COLORS['PRI']
+            on_release: 
+                root.manager.transition.direction = "up"
+                root.manager.current = "downloads"
+
+        MDFloatLayout:
+            pos_hint: {'center_x': .5,"center_y":.85}
+            size_hint:.87, .075
+            canvas.before:
+                Color: 
+                    rgb:app.COLORS['PRI']
+                Line:
+                    width: 1.2
+                    rounded_rectangle:self.x,self.y,self.width,self.height,5,5,5,5,100
+            
+            TextInput:
+                hint_text:"Search for a book"
+                size_hint_y:.76
+                #size_hint: .75, .065
+                size_hint_x: .85
+                required:True
+                id: search_field
+                background_color:0,0,0,0
+                foreground_color:app.COLORS['PRI']
+                cusor_color:app.COLORS['LLPRI']
+                multiline:False
+                pos_hint: {'center_x': .45, 'center_y': .55} 
+                font_name:'MPoppins'
+                font_size: '14sp'
+            MDIconButton:
+                icon: "magnify"
+                theme_text_color: 'Custom'
+                text_color: app.COLORS['PRI']
+                pos_hint: {'center_x': .92, 'center_y': .55} 
+                on_press: app.fetchBook(search_field.text)
+
+        MDScrollView:
+            orientation: 'vertical'
+            spacing: dp(10)
+            size_hint_x: .92
+            padding: dp(20)
+            pos_hint: {'center_x': .5, 'center_y': .41}
+            size_hint_y:.78
+           
+            MDGridLayout:
+                id: box
+                cols: 1
+                adaptive_height: True
