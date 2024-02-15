@@ -22,4 +22,4 @@
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/theTrine333/BookME.git
+   git clone https://github.com/theTrine333/BookME-App.git
