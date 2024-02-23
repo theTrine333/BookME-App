@@ -31,7 +31,7 @@ from kivy.uix.modalview import ModalView
 from kivy.properties import StringProperty
 from kivymd.uix.relativelayout import MDRelativeLayout
 
-Window.size = (400,650)
+#Window.size = (400,650)
 
 Firebase = firebase.FirebaseApplication('https://bookme-1703626309990-default-rtdb.firebaseio.com/',None)
 downloadsFolder = join('/storage/emulated/0/BookME', 'BookME') if platform == 'android' else (os.path.expanduser("~")+"/Downloads/BookME")
