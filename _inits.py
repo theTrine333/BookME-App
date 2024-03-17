@@ -12,7 +12,7 @@ from kivy.utils import get_color_from_hex
 from kivymd.toast import toast
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivy.properties import BooleanProperty
-from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelThreeLine
+from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelTwoLine
 from kivymd.uix.button import *
 from kivy.uix.screenmanager import ScreenManager
 from kivymd.uix.snackbar import Snackbar
@@ -23,18 +23,20 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from FirebaseFolder import firebase
 from kivy.core.text import LabelBase
+from kivy.base import platform
 import subprocess,os, platform,json,threading,time,multitasking
 from requests.exceptions import ConnectionError
 import requests
+from api.__api__ import *
 from kivy.uix.modalview import ModalView
-
 from kivy.properties import StringProperty
 from kivymd.uix.relativelayout import MDRelativeLayout
+from plyer import notification
 
-#Window.size = (400,650)
+Window.size = (400,680)
 
 Firebase = firebase.FirebaseApplication('https://bookme-1703626309990-default-rtdb.firebaseio.com/',None)
-downloadsFolder = join('/storage/emulated/0/BookME', 'BookME') if platform == 'android' else (os.path.expanduser("~")+"/Downloads/BookME")
+downloadsFolder = join('/storage/emulated/0/', 'BookME') if platform == 'android' else (os.path.expanduser("~")+"\\Downloads\\BookME")
 
 class SpinnerPopup(ModalView):
     pass
