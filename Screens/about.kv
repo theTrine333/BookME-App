@@ -1,0 +1,78 @@
+MDScreen:
+    name:"about"
+    MDFloatLayout:
+        MDScrollView:
+            # FOR DISABLE y AXIS SCROLL
+            do_scroll_x:False
+            MDBoxLayout:
+                orientation: 'vertical'
+                adaptive_height: True
+                spacing:30
+                padding:0,20
+                FitImage:
+                    id: bg_image
+                    source: app.Poster
+                    size_hint: None, None
+                    pos_hint: {'center_x': .5}
+                    size: "270dp", "360dp"
+                    radius: 36, 36, 36, 36
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    pos_hint: {'center_x': .65}
+                    adaptive_height: True
+                    spacing:60
+                    MDRoundFlatIconButton:
+                        icon: "arrow-left"
+                        text: "BACK"
+                        on_release:
+                            root.manager.transition.direction = "right"
+                            root.manager.current = "search"
+                    MDRoundFlatIconButton:
+                        icon: "progress-download"
+                        text: "Download"
+                        on_release:app.start_download(app.Link)
+                MDProgressBar:
+                    value:0
+                    min:0
+                    max:100
+                    type: "determinate"
+                    id:progress_bar
+                    size_hint:.8,None
+                    pos_hint: {'center_x': .5}
+                    #disabled: 'False'
+                
+                MDGridLayout:
+                    cols: 1
+                    size_hint_y: None
+                    spacing:20
+                    MDLabel:
+                        text: "TITLE : "
+                        padding:30,0,10,0
+                        font_name: 'MPoppins'
+                        font_size: "14sp"
+                        height: self.texture_size[1]
+
+                    MDLabel:
+                        text: app.Title
+                        padding:30,0,10,0
+                        font_name: 'MPoppins'
+                        font_size: "11sp"
+                        font_color: 1,1,1,.5
+                        size_hint_y: None
+                        height: self.texture_size[1]
+
+                    MDLabel:
+                        text: "INFO : "
+                        padding:30,0,10,0
+                        font_name: 'MPoppins'
+                        font_size: "14sp"
+                        height: self.texture_size[1]
+
+                    MDLabel:
+                        text: app.Info
+                        padding:30,0,20,0
+                        font_name: 'MPoppins'
+                        font_size: "11sp"
+                        font_color: 1,1,1,.5
+                        size_hint_y: None
+                        height: self.texture_size[1]
