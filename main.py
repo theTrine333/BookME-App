@@ -1,6 +1,10 @@
 from _inits import *
 
 class BookMe(MDApp):
+    Poster = StringProperty()
+    Title = StringProperty()
+    Info = StringProperty()
+    FileType = StringProperty()
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.modal = None
@@ -19,7 +23,10 @@ class BookMe(MDApp):
     global screenManager
     screenManager = ScreenManager()
 
-    def on_start(self):
+    def on_start(self):                  
+        if platform == 'android':
+            from android.permissions import Permssion,request_permissions
+            request_permissions([Permssion.MANAGE_EXTERNAL_STORAGE])
         try:
             os.mkdir(downloadsFolder)
         except Exception:
@@ -49,12 +56,10 @@ class BookMe(MDApp):
         widget.icon='progress-alert'
         widget.theme_text_color="Custom"
         widget.text_color=(1,0,0,1)             
-    
     def success(self,widget):
         widget.icon='progress-check'
         widget.theme_text_color="Custom"
         widget.text_color=(0,1,0,1)    
-    
     def signup(self,email,username,password,nav):
         self.modal = SpinnerPopup()
         self.modal.open()
@@ -100,7 +105,6 @@ class BookMe(MDApp):
                 ],
             )
             self.modal.dismiss()
-    
     def login(self, nav):
         self.modal = SpinnerPopup()
         self.modal.open()
@@ -151,54 +155,39 @@ class BookMe(MDApp):
         Nav.manager.transition.direction = Direction
         Nav.manager.current = "search"   
                 
+    def setDetails(self,url,fileType):
+        book_details = getBookDetails(url)
+        self.Poster = book_details[0][1]
+        self.Title = book_details[0][0]
+        self.Link = book_details[0][2]
+        self.FileType = fileType
+        try:
+            self.Info = book_details[0][3]
+        except:
+            self.Info = "Unknown"
     def fetchBook(self,booktoSearch):
         self.modal = SpinnerPopup()
         self.modal.open()
-
         booktoSearch = booktoSearch.replace(' ','_')
         screenManager.get_screen("search").ids.box.clear_widgets()
-        url = f"https://filepursuit.p.rapidapi.com/?q={booktoSearch}&filetype=pdf"
-        from data import key,host
-        headers = {
-            "X-RapidAPI-Key": key,
-            "X-RapidAPI-Host": host
-        }
-        #response = requests.get(url, headers=headers, params=querystring).json()
-        response = UrlRequest(
-            url, 
-            on_success=self.got_response,
-            req_headers=headers,
-            on_error=self.fail,
-            on_failure=self.fail,
-        )
-            
-    def build(self):
-        self.theme_cls.primary_palette = "Orange"
-        self.theme_cls.theme_style = "Dark"
-        
-        screenManager.add_widget(Builder.load_file("Screens/main.kv"))
-        screenManager.add_widget(Builder.load_file("Screens/login.kv"))
-        screenManager.add_widget(Builder.load_file("Screens/signup.kv"))
-        screenManager.add_widget(Builder.load_file("Screens/search.kv"))
-        screenManager.add_widget(Builder.load_file("Screens/downloads.kv"))
-        return screenManager
-    
-    def got_response(self, req, r):
-        response = r
-        if response["status"] == "success":
-            #REMEMBER TO CHECK THIS LINE
-            if response['files_found'] != []:
-                for result in response["files_found"]:
-                    if result['file_size_bytes'] != "":
+        try:
+            results = searchBooks(booktoSearch)
+            if results !=[]:
+                for result in results:
+                    #bookTitle = result[0]
+                    #lastIndex = bookTitle.rfind(":")
+                    #self.bookTitle = bookTitle[::lastIndex+1]
+                    #print(self.bookTitle)
+                    if result[3] =="pdf":
                         screenManager.get_screen("search").ids.box.add_widget(
                             MDExpansionPanel(                            
-                            content=Builder.load_string(
-f"""
+                                content=Builder.load_string(
+    f"""
 MDBoxLayout:
     adaptive_height: True
     OneLineAvatarIconListItem:
         id:'lister'
-        text: "Size : {result['file_size']}"
+        text: "Size : {result[2]}"
         theme_text_color: 'Custom'
         text_color: {self.COLORS['PRI']}
 
@@ -208,62 +197,115 @@ MDBoxLayout:
             text_color: {self.COLORS['PRI']}
         
         IconRightWidget:
-            icon:'progress-download'
+            icon:'arrow-right-circle-outline'
             theme_text_color: 'Custom'
-            text_color: {self.COLORS['BLUE']}
-            on_release: app.downloadMe("{result['file_link']}",self)              
-"""),
-                            panel_cls=MDExpansionPanelThreeLine(
-                                text=f"{result['file_name']}",
-                                secondary_text=f"Uploaded : {result['time_ago']}",
-                                tertiary_text=f"Source : {result['referrer_host']}",
-                                theme_text_color='Custom',
-                                text_color=(1,.65,0,1),
-                                secondary_theme_text_color='Custom',
-                                secondary_text_color=(1,.65,0,.5))
+            text_color: {self.COLORS['PRI']}
+            on_release: 
+                #app.screenManager.transition.direction="left"
+                app.root.current = "about"
+                app.setDetails("{result[1]}","{result[3]}")
+                                
+    """),
+                                panel_cls=MDExpansionPanelTwoLine(
+                                    text=f"{result[0]}",
+                                    secondary_text=f"Language : {result[4]}",
+                                    theme_text_color='Custom',
+                                    text_color=(1,.65,0,1),
+                                    secondary_theme_text_color='Custom',
+                                    secondary_text_color=(1,.65,0,.5))
+                                )
                             )
-                        )
+                
                 self.modal.dismiss()
             else:
-                self.modal.dismiss()              
-        else :                   
-            self.modal.dismiss()
-            text = f'RESPONSE : {r["status"]} RECEIVED' if r == [] else str(r)
+                self.dialog = MDDialog(
+                    text="No results found",
+                    cls = self.theme_cls.primary_palette,
+                    auto_dismiss=False,
+                    type='alert',
+                    radius=[7, 7, 7, 7],
+                    buttons=[
+                        MDRaisedButton(
+                            text="Close",
+                            on_release = (lambda x : self.dialog.dismiss())
+                        ),
+                    ],
+                )
+                self.dialog.open()
+                self.modal.dismiss()
+        except:
             self.dialog = MDDialog(
-                text=text,
-                cls = self.theme_cls.primary_palette,
-                auto_dismiss=False,
-                type='alert',
-                radius=[20, 7, 20, 7],
-                buttons=[
-                    MDRaisedButton(
-                        text="Close",
-                        on_release = (lambda x : self.dialog.dismiss())
-                    ),
-                ],
-            )
-            self.dialog.open()        
+                    title="Error Occured",
+                    text="Something went wrong\nDo you wish to try again?",
+                    cls = self.theme_cls.primary_palette,
+                    auto_dismiss=False,
+                    type='alert',
+                    radius=[7, 7, 7, 7],
+                    buttons=[
+                        MDRaisedButton(
+                            text="Close",
+                            on_release = (lambda x : self.dialog.dismiss())
+                        ),
+                        MDRaisedButton(
+                            text="Retry",
+                            on_release =lambda x : (
+                                self.dialog.dismiss(),
+                                self.fetchBook(booktoSearch)
+                            )
+                        )
+                    ],
+                )
             
-    def fail(self, req, r):
-        self.modal.dismiss()
-        screenManager.get_screen("search").ids.box.clear_widgets()
-        text = f'RESPONSE : {r["status"]} RECEIVED' if r == [] else str(r)
-        self.dialog = MDDialog(
-            text=text,
-            cls = self.theme_cls.primary_palette,
-            auto_dismiss=False,
-            type='alert',
-            radius=[20, 7, 20, 7],
-            buttons=[
-                MDRaisedButton(
-                    text="Close",
-                    on_release = (lambda x : self.dialog.dismiss())
-                ),
-            ],
+            self.dialog.open()
+            self.modal.dismiss()
+           
+    def start_download(self, url):
+        self.modal = SpinnerPopup()
+        self.modal.open()
+        # URL pointing directly to the image file
+        self.request = UrlRequest(
+            url, 
+            on_progress=self.on_progress, 
+            on_error=self.on_error,
+            on_success=self.on_success_download,
+            chunk_size=1024,
+            file_path=f"{downloadsFolder}\\{self.Title}.{self.FileType}"
         )
-        self.dialog.open()
+        self.modal.dismiss()
 
-        #dialog.open() 
+    def on_progress(self, request, current_size, total_size):
+        if total_size and current_size:
+            progress = int((current_size / total_size) * 100)
+            screenManager.get_screen("about").ids.progress_bar.value = progress
+            #self.progress_bar.value = progress
+    
+        
+    def on_success_download(self, request, result):
+        screenManager.get_screen("about").ids.progress_bar.value = 0
+        notification.notify(
+            app_name = "BookME",
+            #app_icon = "/assets/icons/0.png",
+            title = "BookME",
+            message="Download completed successfully" ,
+            # displaying time
+            timeout=2
+        )
+
+    def on_error(self, request, error):
+        screenManager.get_screen("about").ids.progress_bar.value = 0
+        print("Download error:", error)
+            
+    def build(self):
+        self.theme_cls.primary_palette = "Orange"
+        self.theme_cls.theme_style = "Dark"
+        
+        screenManager.add_widget(Builder.load_file("Screens/main.kv"))
+        #screenManager.add_widget(Builder.load_file("Screens/login.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/about.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/signup.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/search.kv"))
+        screenManager.add_widget(Builder.load_file("Screens/downloads.kv"))
+        return screenManager
     def on_downloads_active(self):
         try:
             os.mkdir(downloadsFolder)
@@ -293,7 +335,7 @@ MDBoxLayout:
         else:
             for File in listdir(downloadsFolder):
                 name = File
-                File = downloadsFolder+'/'+File
+                File = downloadsFolder+'\\'+File
                 size = getsize(File)
                 Time = time.ctime(getmtime(File))
                 intial_size = str(round(size/1024000,2)) +"MB" if int(size/1024000)!=0 else str(round(size/1024,2)) +"KB"
@@ -335,7 +377,6 @@ ThreeLineAvatarIconListItem:
             os.startfile(File)
         except AttributeError:
             subprocess.call(['open',File])
-    
     def set_selection_mode(self, instance_selection_list, mode):
         if mode:
             md_bg_color = (0, 0, 0, 0)
@@ -361,8 +402,6 @@ ThreeLineAvatarIconListItem:
                 len(instance_selection_list.get_selected_list_items())
             )
 
-    def deleteFile(self,instance_selection_list, instance_selection_item):
-        print("STARTING>>>")
 
 if __name__ == "__main__" :
     LabelBase.register(name="MPoppins",fn_regular="assets/fonts/Poppins-Medium.ttf")
