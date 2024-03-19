@@ -26,7 +26,7 @@ class BookMe(MDApp):
     def on_start(self):                  
         if platform == 'android':
             from android.permissions import Permssion,request_permissions
-            request_permissions([Permssion.MANAGE_EXTERNAL_STORAGE])
+            request_permissions([Permssion.READ_EXTERNAL_STORAGE,Permssion.WRITE_EXTERNAL_STORAGE,Permssion.MANAGE_EXTERNAL_STORAGE])
         try:
             os.mkdir(downloadsFolder)
         except Exception:
