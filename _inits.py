@@ -36,7 +36,7 @@ from plyer import notification
 Window.size = (400,680)
 
 Firebase = firebase.FirebaseApplication('https://bookme-1703626309990-default-rtdb.firebaseio.com/',None)
-downloadsFolder = join('/storage/emulated/0/', 'BookME') if platform == 'android' else (os.path.expanduser("~")+"\\Downloads\\BookME")
+downloadsFolder = "/storage/emulated/0/BookME" if platform == 'android' else (os.path.expanduser("~")+"\\Downloads\\BookME")
 
 class SpinnerPopup(ModalView):
     pass
