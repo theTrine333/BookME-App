@@ -33,7 +33,7 @@ from kivy.properties import StringProperty
 from kivymd.uix.relativelayout import MDRelativeLayout
 from plyer import notification
 
-Window.size = (400,680)
+#Window.size = (400,680)
 
 Firebase = firebase.FirebaseApplication('https://bookme-1703626309990-default-rtdb.firebaseio.com/',None)
 #downloadsFolder = "/storage/emulated/0/BookME" if platform == 'android' else (os.path.expanduser("~")+"\\Downloads\\BookME")
