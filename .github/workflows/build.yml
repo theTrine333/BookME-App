@@ -19,6 +19,7 @@ jobs:
 
       - name: Installing system requirements
         run: |
+          pip install buldozer
           pip install cython==0.29.19 
           sudo apt-get install -y \
             python3-pip \
@@ -38,18 +39,6 @@ jobs:
             zlib1g-dev
           export PATH=$PATH:~/.local/bin/
         shell: bash
-
-      - name: Cache Buildozer global directory
-        uses: actions/cache@v2
-        with:
-          path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }} # Replace with your path
-
-      - uses: actions/cache@v2
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
-      
       
       - name: Install Buildozer dependacies
         run: |
@@ -58,13 +47,10 @@ jobs:
           ./install-kivy-buildozer-dependencies.sh
         shell: bash  
 
-     
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
         id: buildozer
         with:
           command: buildozer android debug
-          buildozer_version: stable
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
